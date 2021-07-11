@@ -20,6 +20,7 @@ add_executable(refAndPointerPass refAndPointerPass.cpp)
 add_executable(constClassMembers constClassMembers.cpp)
 add_executable(inline inline.cpp)
 add_executable(classExplained classExplained.cpp)
+add_executable(recursive recursive.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
