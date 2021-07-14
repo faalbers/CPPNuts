@@ -14,24 +14,24 @@ public:
     void print(int &val) {
         std::cout << "BaseA::print(int&): " << val << std::endl;
         // allowed to change
-        val += 2;
+        val += 1;
     }
     void print(const int &val) {
         std::cout << "BaseA::print(const int&): " << val << std::endl;
         // not allowed to change value
-        //val += 2;
+        //val += 1;
     }
 
     // const overload with pass by pointer does work
     void print(int *val) {
         std::cout << "BaseA::print(int*): " << *val << std::endl;
         // allowed to change
-        *val += 2;
+        *val += 1;
     }
     void print(const int *val) {
         std::cout << "BaseA::print(const int*): " << *val << std::endl;
         // not allowed to change value
-        //*val += 2;
+        //*val += 1;
     }
 
 };
@@ -63,8 +63,9 @@ int main()
     int a = 1;
     ba.print(a);
     std::cout << "changed pass by reference value: " << a << std::endl;
+    a = 1;
 
-    const int b = 2;
+    const int b = 1;
     ba.print(b);
     
     // pass by pointer
@@ -87,7 +88,7 @@ int main()
     
     // this does not work, no const funtion for const object
     const BaseD bd;
-    //bd.print();
+    // bd.print();
 
     return 0;
 }
