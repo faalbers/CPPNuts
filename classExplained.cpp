@@ -11,6 +11,8 @@ class Base
     const int const_;
     // this reference member needs to be initialized with a initializer list
     int &ref_;
+    // a const member fuction can not change any member data in a class except for mutable member data
+    mutable int mutTest_ = 1000;
 public:
     // default constructor with initialization
     //Base() {x_=0; y_=new double(0); std::cout << "Base::Base()\n"; }
@@ -59,7 +61,19 @@ public:
         // and const_ = rhs.const_ will give an error anyway since it was already assigned
         deleteY_ = true;
         ref_ = rhs.ref_;
+        a = rhs.a;
         return *this;
+    }
+
+    // operator + overload
+    Base operator+ (const Base &rhs)
+    {
+        Base b(ref_);
+        b.x_ = x_ + rhs.x_;
+        *b.y_ = *y_ + *rhs.y_;
+        b.deleteY_ = true;
+        b.a = a + rhs.a;
+        return b;
     }
 
     void printPrivate() {std::cout
@@ -95,6 +109,22 @@ public:
     // print object address
     void objectAddress() { std::cout << this << std::endl; }
 
+    // adding functions below as friend
+    friend void setX(Base &, double);
+    friend double getX(Base &);
+
+    // adding class as friend
+    friend class GetSet;
+
+    void constChangeTest() const
+    {
+        // this does not work because function is const and member data us not mutable
+        //x_ = 5000;
+
+        // but changing a mutable data member does work
+        mutTest_ = 5000;
+    }
+
     // public data members
     int a = 0;  // declaration (memory allocation) and initialization is done during object construction
     static int b; // decleration (memory allocation) needs to be done outside of the class scope
@@ -106,6 +136,32 @@ public:
 //int Base::b;
 // you can also add an initialization to the declared static member
 int Base::b = 0;
+
+// this will not work because x_ is private
+// by adding it the class Base a s friend it will work
+void setX(Base &obj, double x)
+{
+    obj.x_ = x;
+}
+
+double getX(Base &obj)
+{
+    return obj.x_;
+}
+
+// we can also make a class be a friend of another class
+class GetSet
+{
+public:
+    void setX(Base &obj, double x) { obj.x_ = x; }
+    double getX(Base &obj) { return obj.x_; }
+};
+
+class Derived : public Base
+{
+public:
+    Derived(int &ref) : Base(ref) {}
+};
 
 int main()
 {
@@ -175,6 +231,37 @@ int main()
     std::cout << "static this test\n";
     a.printB();
     a.printBThis();
+    std::cout << std::endl;
+
+    std::cout << "using friend function setX to set privat x_\n";
+    setX(a, 5.3);
+    std::cout << getX(a) << std::endl;
+
+    std::cout << "using friend class to set privat x_\n";
+    GetSet gs;
+    std::cout << gs.getX(a) << std::endl;
+    gs.setX(a, 6.3);
+    std::cout << getX(a) << " " << gs.getX(a) << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "friends of inherited class seem to automatically become friends of derived class\n";
+    Derived der(refVal);
+    der.printPrivate();
+    gs.setX(der, 20.5);
+    std::cout << getX(der) << " " << gs.getX(der) << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "operator overload example\n";
+    Base e(refVal);
+    b.a = 4;
+    d.a = 5;
+    e = b + d;
+    b.printPrivate();
+    b.printPublic();
+    d.printPrivate();
+    d.printPublic();
+    e.printPrivate();
+    e.printPublic();
     std::cout << std::endl;
 
     return 0;
