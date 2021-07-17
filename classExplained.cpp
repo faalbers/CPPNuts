@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 class Base
 {
@@ -90,16 +91,12 @@ public:
             return *y_;
         else {
             std::cout << "Base[]: out of bound index\n";
-            exit(0);
+            // exit whole program because shit hit the fan !
+            exit(1);
         }
     }
 
-    void printPrivate() {std::cout
-        << "x_\t = " << x_ << "\ny_\t = " << *y_ << "\ndeleteY_ = " << deleteY_
-        << "\nconst_\t = " << const_ << "\nref_\t = " << ref_ << std::endl;}
-    
     // non static member functions can access both static and non static data members
-    void printPublic() {std::cout << "a\t = " << a << "\nb\t = " << b << "\nc\t = " << c << std::endl;}
 
     // the following gives an error because static member functions can not access non static data members
     //static void printAB() {std::cout << "a\t = " << a << "\nb\t = " << b << std::endl;}
@@ -143,6 +140,10 @@ public:
         mutTest_ = 5000;
     }
 
+    // we have to make iostream operator overloads friends so they can access private data
+    friend std::ostream& operator << (std::ostream&, Base&);
+    friend std::istream& operator >> (std::istream&, Base&);
+
     // public data members
     int a = 0;  // declaration (memory allocation) and initialization is done during object construction
     static int b; // decleration (memory allocation) needs to be done outside of the class scope
@@ -181,6 +182,33 @@ public:
     Derived(int &ref) : Base(ref) {}
 };
 
+// creating iostream operator overloads for the class
+// we have to make iostream operator overloads friends to the used class so they can access private data
+std::ostream& operator << (std::ostream& output, Base& obj)
+{
+    // also format the floating point values
+    output << std::fixed << std::setprecision(2)
+        <<   "x_ = " << std::setw(5) << obj.x_
+        << ", y_ = " << std::setw(5) << *obj.y_
+        << ", deleteY_ = " << std::boolalpha << obj.deleteY_
+        << ", const_ = " << obj.const_
+        << ", ref_ = " << obj.ref_
+        << ", mutTest_ = " << obj.mutTest_
+        << ", a = " << obj.a << ", b = " << obj.b << ", c = " << obj.c;
+    return output;
+}
+
+std::istream& operator >> (std::istream& input, Base& obj)
+{
+    std::cout << "Enter x_: ";
+    input >> obj.x_;
+    std::cout << "Enter y_: ";
+    input >> *obj.y_;
+    std::cout << "Enter a : ";
+    input >> obj.a;
+    return input;
+}
+
 int main()
 {
     // param to be referenced
@@ -188,40 +216,38 @@ int main()
 
     std::cout << "Base a;\n";
     Base a(refVal);
-    a.printPrivate();
-    a.printPublic();
+    std::cout << a << std::endl;
     // you can assign a static member like this
     Base::b = 10;
-    a.printPublic();
+    std::cout << a << std::endl;
     // or you can assign a static member like this
     // remember, this value will be the same for all created objects
     a.b = 20;
-    a.printPublic();
+    std::cout << a << std::endl;
     std::cout << std::endl;
 
     std::cout << "Base b;\n";
     Base b(refVal, 1.3, 1.4);
-    b.printPrivate();
     // here you can see this object points to the same static class member
-    a.printPublic();
+    std::cout << a << std::endl;
     std::cout << std::endl;
     
     std::cout << "Base c;\n";
     Base c = b;
-    c.printPrivate();
+    std::cout << c << std::endl;
     std::cout << std::endl;
 
     std::cout << "Base cc;\n";
     int refValB = 1000;
     Base cc(refValB);
     cc = b;
-    cc.printPrivate();
+    std::cout << cc << std::endl;
     std::cout << std::endl;
 
     std::cout << "Base d;\n";
     double *y = new double(2.4);
     Base d(refVal, 2.3, y);
-    d.printPrivate();
+    std::cout << d << std::endl;
 
     std::cout << "Static Funtions\n";
     d.printB();
@@ -231,11 +257,11 @@ int main()
     // changing referenced refVal
     std::cout << "Changed refVal = 200\n";
     refVal = 200;
-    a.printPrivate();
-    b.printPrivate();
-    c.printPrivate();
-    cc.printPrivate();
-    d.printPrivate();
+    std::cout << a << std::endl;
+    std::cout << b << std::endl;
+    std::cout << c << std::endl;
+    std::cout << cc << std::endl;
+    std::cout << d << std::endl;
     std::cout << std::endl;
 
     std::cout << "object addresses\n";
@@ -264,7 +290,7 @@ int main()
 
     std::cout << "friends of inherited class seem to automatically become friends of derived class\n";
     Derived der(refVal);
-    der.printPrivate();
+    std::cout << der << std::endl;
     gs.setX(der, 20.5);
     std::cout << getX(der) << " " << gs.getX(der) << std::endl;
     std::cout << std::endl;
@@ -274,25 +300,26 @@ int main()
     b.a = 4;
     d.a = 5;
     e = b + d;
-    b.printPrivate();
-    b.printPublic();
-    d.printPrivate();
-    d.printPublic();
-    e.printPrivate();
-    e.printPublic();
+    std::cout << b << std::endl;
+    std::cout << d << std::endl;
+    std::cout << e << std::endl;
     std::cout << std::endl;
 
     std::cout << "unary operator overload example\n";
     Base f(refVal);
     f = -b;
-    f.printPrivate();
-    f.printPublic();
+    std::cout << f << std::endl;
     std::cout << std::endl;
 
     std::cout << "subscript operator overload example\n";
     f[0] = 5.5;
     f[1] = 6.6;
-    f.printPrivate();
+    std::cout << f << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "istream operators overload example\n";
+    std::cin >> f;
+    std::cout << f << std::endl;
     std::cout << std::endl;
 
     // do not forget to delete y
