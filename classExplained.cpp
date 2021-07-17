@@ -49,7 +49,7 @@ public:
     // operator= can not be implemented because there is no Base() constructor
     // We can not create a Base() constructor because we HAVE to initialize the
     // ref_ reference parameter with an incoming referenced parameter
-    Base& operator=(const Base& rhs)
+    Base& operator = (const Base& rhs)
     {
         x_ = rhs.x_;
         y_ = new double(*rhs.y_);
@@ -62,7 +62,7 @@ public:
     }
 
     // operator + overload
-    Base operator+ (const Base &rhs)
+    Base operator + (const Base &rhs)
     {
         Base b(ref_);
         b.x_ = x_ + rhs.x_;
@@ -73,12 +73,25 @@ public:
     }
     
     // unary operator - overload
-    Base operator- ()
+    Base operator - ()
     {
         Base b(ref_, -x_, -*y_);
         b.deleteY_ = true;
         b.a = -a;
         return b;
+    }
+
+    // subscript operator [] overload
+    double& operator [] (int pos)
+    {
+        if (pos == 0)
+            return x_;
+        else if (pos == 1)
+            return *y_;
+        else {
+            std::cout << "Base[]: out of bound index\n";
+            exit(0);
+        }
     }
 
     void printPrivate() {std::cout
@@ -274,6 +287,12 @@ int main()
     f = -b;
     f.printPrivate();
     f.printPublic();
+    std::cout << std::endl;
+
+    std::cout << "subscript operator overload example\n";
+    f[0] = 5.5;
+    f[1] = 6.6;
+    f.printPrivate();
     std::cout << std::endl;
 
     // do not forget to delete y
