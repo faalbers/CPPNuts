@@ -25,12 +25,12 @@ public:
     //Base(double x, double y) {x_=x; y_=new double(y); std::cout << "Base::Base(double, double)\n"; }
     Base(double x, double y, int &ref) : x_(x), y_(new double(y)), deleteY_(true), const_(100), ref_(ref)
     {
-        std::cout << "Base::Base(double, double)\n";
+        std::cout << "Base::Base(double, double, int&)\n";
     }
 
     Base(double x, double *y, int &ref) : x_(x), y_(y), deleteY_(false), const_(100), ref_(ref)
     {
-        std::cout << "Base::Base(double, double*)\n";
+        std::cout << "Base::Base(double, double*, int&)\n";
     }
 
     // copy constructor
@@ -73,6 +73,15 @@ public:
         *b.y_ = *y_ + *rhs.y_;
         b.deleteY_ = true;
         b.a = a + rhs.a;
+        return b;
+    }
+    
+    // unary operator - overload
+    Base operator- ()
+    {
+        Base b(-x_, -*y_, ref_);
+        b.deleteY_ = true;
+        b.a = -a;
         return b;
     }
 
@@ -262,6 +271,13 @@ int main()
     d.printPublic();
     e.printPrivate();
     e.printPublic();
+    std::cout << std::endl;
+
+    std::cout << "unary operator overload example\n";
+    Base f(refVal);
+    f = -b;
+    f.printPrivate();
+    f.printPublic();
     std::cout << std::endl;
 
     return 0;
