@@ -14,23 +14,19 @@ class Base
     // a const member fuction can not change any member data in a class except for mutable member data
     mutable int mutTest_ = 1000;
 public:
-    // default constructor with initialization
+    // no default constructor because we need to set ref_
     //Base() {x_=0; y_=new double(0); std::cout << "Base::Base()\n"; }
-    Base(int &ref) : x_(0), y_(new double(0)), deleteY_(true), const_(100), ref_(ref)
-    {
-        std::cout << "Base::Base()\n";
-    }
 
     // parametrized constructors with initialization
     //Base(double x, double y) {x_=x; y_=new double(y); std::cout << "Base::Base(double, double)\n"; }
-    Base(double x, double y, int &ref) : x_(x), y_(new double(y)), deleteY_(true), const_(100), ref_(ref)
+    Base(int &ref, double x = 0, double y = 0) : ref_(ref), x_(x), y_(new double(y)), deleteY_(true), const_(100)
     {
-        std::cout << "Base::Base(double, double, int&)\n";
+        std::cout << "Base::Base(int&, double, double)\n";
     }
 
-    Base(double x, double *y, int &ref) : x_(x), y_(y), deleteY_(false), const_(100), ref_(ref)
+    Base(int &ref, double x, double *y) : ref_(ref), x_(x), y_(y), deleteY_(false), const_(100)
     {
-        std::cout << "Base::Base(double, double*, int&)\n";
+        std::cout << "Base::Base(int&, double, double*)\n";
     }
 
     // copy constructor
@@ -79,7 +75,7 @@ public:
     // unary operator - overload
     Base operator- ()
     {
-        Base b(-x_, -*y_, ref_);
+        Base b(ref_, -x_, -*y_);
         b.deleteY_ = true;
         b.a = -a;
         return b;
@@ -191,7 +187,7 @@ int main()
     std::cout << std::endl;
 
     std::cout << "Base b;\n";
-    Base b(1.3, 1.4, refVal);
+    Base b(refVal, 1.3, 1.4);
     b.printPrivate();
     // here you can see this object points to the same static class member
     a.printPublic();
@@ -211,7 +207,7 @@ int main()
 
     std::cout << "Base d;\n";
     double *y = new double(2.4);
-    Base d(2.3, y, refVal);
+    Base d(refVal, 2.3, y);
     d.printPrivate();
 
     std::cout << "Static Funtions\n";
@@ -279,6 +275,9 @@ int main()
     f.printPrivate();
     f.printPublic();
     std::cout << std::endl;
+
+    // do not forget to delete y
+    delete y;
 
     return 0;
 }
