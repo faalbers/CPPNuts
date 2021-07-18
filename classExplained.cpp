@@ -1,6 +1,40 @@
 #include <iostream>
 #include <iomanip>
 
+// this one created to make operator Base = BaseWannaBe possible
+class BaseWannaBe
+{
+    double x_;
+    double y_;
+public:
+    BaseWannaBe(double x = 0, double y = 0) : x_(x), y_(y)
+    {
+        std::cout << "BaseWannaBe::BaseWannaBe(double, double)\n";
+    }
+    
+    // destructor
+    ~BaseWannaBe()
+    {
+        std::cout << "BaseWannaBe::~BaseWannaBe()\n";
+    }
+
+    // make Base a friend so it can access this private data
+    friend class Base;
+
+    // we have to make iostream operator overloads friends so they can access private data
+    friend std::ostream& operator << (std::ostream&, BaseWannaBe&);
+};
+
+// ostream overload for printing data
+std::ostream& operator << (std::ostream& output, BaseWannaBe& obj)
+{
+    // also format the floating point values
+    output << std::fixed << std::setprecision(2)
+        <<   "x_ = " << std::setw(5) << obj.x_
+        << ", y_ = " << std::setw(5) << obj.y_;
+    return output;
+}
+
 class Base
 {
 // class is default private, struct is not
@@ -30,7 +64,7 @@ public:
         std::cout << "Base::Base(int&, double, double*)\n";
     }
 
-    // copy constructor
+    // copy constructor for itself
     //Base(const Base &rhs) {x_=rhs.x_; y_=new double(*rhs.y_); std::cout << "Base::Base(const Base&)\n";}
     Base(const Base &rhs) : x_(rhs.x_), y_(new double(*rhs.y_)), deleteY_(true), const_(rhs.const_), ref_(rhs.ref_)
     {
@@ -47,18 +81,27 @@ public:
         }
     }
 
-    // operator= can not be implemented because there is no Base() constructor
-    // We can not create a Base() constructor because we HAVE to initialize the
-    // ref_ reference parameter with an incoming referenced parameter
+    // assignement operator doing it right
     Base& operator = (const Base& rhs)
     {
+        // do a self assignement ( same = same ) to make sure. It's suggested
+        if ( this != &rhs ) {
+            x_ = rhs.x_;
+            y_ = new double(*rhs.y_);
+            // const_ does not need to be copied because all other objects already have it
+            // and const_ = rhs.const_ will give an error anyway since it was already assigned
+            deleteY_ = true;
+            ref_ = rhs.ref_;
+            a = rhs.a;
+        }
+        return *this;
+    }
+    
+    // assignement operator from another class
+    Base& operator = (const BaseWannaBe& rhs)
+    {
         x_ = rhs.x_;
-        y_ = new double(*rhs.y_);
-        // const_ does not need to be copied because all other objects already have it
-        // and const_ = rhs.const_ will give an error anyway since it was already assigned
-        deleteY_ = true;
-        ref_ = rhs.ref_;
-        a = rhs.a;
+        *y_ = rhs.y_;
         return *this;
     }
 
@@ -68,7 +111,6 @@ public:
         Base b(ref_);
         b.x_ = x_ + rhs.x_;
         *b.y_ = *y_ + *rhs.y_;
-        b.deleteY_ = true;
         b.a = a + rhs.a;
         return b;
     }
@@ -229,11 +271,26 @@ int main()
     std::cout << "Base b;\n";
     Base b(refVal, 1.3, 1.4);
     // here you can see this object points to the same static class member
-    std::cout << a << std::endl;
+    std::cout << b << std::endl;
     std::cout << std::endl;
     
     std::cout << "Base c;\n";
-    Base c = b;
+    // using operator =
+    Base c(refVal);
+    c = b;
+    std::cout << c << std::endl;
+    // using copy constructor
+    Base c2 = b;
+    std::cout << c2 << std::endl;
+    // using copy constructor also
+    Base c3(b);
+    std::cout << c3 << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "BaseWannaBe cwb;\n";
+    BaseWannaBe cwb(9.9, 8.8);
+    std::cout << cwb << std::endl;
+    c = cwb;
     std::cout << c << std::endl;
     std::cout << std::endl;
 
