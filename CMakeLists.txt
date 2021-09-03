@@ -37,6 +37,7 @@ add_executable(vectorReverse vectorReverse.cpp)
 add_executable(copyNewSharedPointer copyNewSharedPointer.cpp)
 add_executable(mapExplained mapExplained.cpp)
 add_executable(lambdaExplained lambdaExplained.cpp)
+add_executable(timeTesting timeTesting.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
